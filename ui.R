@@ -17,13 +17,13 @@ shinyUI(fluidPage(
              
             sidebarPanel(
                  
-                h3("Folder"),
+                h3("Select Folder"),
                 actionButton(inputId = "folder", 
                     label = "Select any file in the folder...",
                     icon = icon("folder-open")),
                     textOutput("folderConfirm"),
                      
-                h3("Parameters"),
+                h3("Set Parameters"),
                 radioButtons(inputId = "input", 
                     label = h5("Input type:"), 
                     c("Diatrack .txt file" = 1, 
@@ -46,7 +46,7 @@ shinyUI(fluidPage(
                      
                 actionButton(inputId = "read", 
                     label = "Read folder",
-                    icon = icon("clone")),
+                    icon = icon("import", lib = "glyphicon")),
                 textOutput("readConfirm")
             )
                  
@@ -57,7 +57,11 @@ shinyUI(fluidPage(
             h3("Process Tracks"),
              
             sidebarPanel(
-             
+                
+                actionButton(inputId = "reset", 
+                             label = "Reset",
+                             icon = icon("undo")),
+                
                 h3("Link"),
                 numericInput(inputId <- "tolerance", 
                     label = h5("Tolerance level (pixels):"),
@@ -99,7 +103,7 @@ shinyUI(fluidPage(
                 radioButtons(inputId = "maskMethod", 
                     label = h5("Mask method:"), 
                     c("Image masks" = 1, 
-                    "Kernel density clustering" = 2),
+                    "Kernel density clustering (implementation in progress)" = 2),
                     selected = 1),
                 actionButton(inputId = "mask", 
                     label = "Mask",
@@ -108,12 +112,53 @@ shinyUI(fluidPage(
             )
                  
                  
+        ),
+        
+        tabPanel("3. Mean Squared Displacement",
+                 
+            h3("Mean Squared Displacement"),
+                 
+            sidebarPanel(
+                
+                h3("Set Parameters"),
+                
+                numericInput(inputId <- "dtMSD", 
+                    label = h5("Time interval: "),
+                    min = 1,
+                    value = 6,
+                    step = 1),
+                    
+                numericInput(inputId <- "resolutionMSD", 
+                     label = h5("Resolution: "),
+                     min = 0,
+                     value = 0.107),
+                
+                checkboxInput(inputId = "summarizeMSD", 
+                    label = "Summarize", 
+                    value = FALSE),
+                
+                checkboxInput(inputId = "plotMSD", 
+                    label = "Plot", 
+                    value = TRUE),
+                    
+                checkboxInput(inputId = "outputMSD", 
+                    label = "Output", 
+                    value = FALSE),
+                    
+                actionButton(inputId = "calculateMSD", 
+                    label = "Calculate MSD",
+                    icon = icon("stats", lib = "glyphicon")),
+                textOutput("MSDConfirm")
+            )
+                
         )
         
     ),
     
     mainPanel(
         
+        plotOutput(outputId = "plotMSD", inline = T),
+
         h3("Track Info"),
         textOutput("trackllInfo"),
         textOutput("tracklInfo"),

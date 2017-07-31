@@ -7,7 +7,11 @@ library(shiny)
 library(smt)
 
 shinyServer(function(input, output, session){
+    
+    #Instantiate reactive values
     trackll <- reactiveValues(data= NULL);
+    trackll.save <- reactiveValues(data= NULL);
+    msd.trackll <- reactiveValues(data= NULL)
     folder <- reactiveValues(data = NULL);
     
     observeEvent(input$folder, {
@@ -17,6 +21,7 @@ shinyServer(function(input, output, session){
         })
     })
     
+    #Read
     observeEvent(input$read, {
         merge = F;
         ab.track = F;
@@ -37,12 +42,18 @@ shinyServer(function(input, output, session){
                                  mask = FALSE,
                                  cores = input$cores,
                                  frameRecord = frameRecord)
+        trackll.save$data <- trackll$data;
         output$readConfirm <- renderText({
             print("Files read.")
         })
     })
     
+    #Reset
+    observeEvent(input$reset, {
+        trackll$data <- trackll.save$data
+    })
     
+    #Link
     observeEvent(input$link, {
         trackll$data <- linkSkippedFrames(trackll = trackll$data, tolerance = input$tolerance, maxSkip = input$maxSkip, cores = input$cores)
         output$linkConfirm <- renderText({
@@ -50,6 +61,7 @@ shinyServer(function(input, output, session){
         })
     })
     
+    #Filter
     observeEvent(input$filter, {
         if (input$maxFilter == 0){
             trackll$data <- filterTrack(trackll$data, filter = c(min = input$minFilter, max = Inf))
@@ -61,6 +73,7 @@ shinyServer(function(input, output, session){
         })
     })
     
+    #Trim
     observeEvent(input$trim, {
         trackll$data <- trimTrack(trackll$data, trimmer = c(min = input$trimRange[[1]], max = input$trimRange[[2]]))
         output$trimConfirm <- renderText({
@@ -68,6 +81,7 @@ shinyServer(function(input, output, session){
         })
     })
     
+    #Mask
     observeEvent(input$mask, {
         if (input$maskMethod == 1){
             trackll$data <- maskTracks(folder$data, trackll$data)
@@ -79,11 +93,14 @@ shinyServer(function(input, output, session){
         })
     })
     
+    #Update trackl number slider to match data
     observe({
-        updateSliderInput(session, "tracklNum",
-                          max = length(trackll$data))
+        updateSliderInput(session, 
+            inputId = "tracklNum",
+            max = length(trackll$data))
     })
     
+    #Plot trackl
     output$plotPoints <- renderPlot({
         if (!is.null(trackll$data)){
             if (input$plotType == 1){
@@ -94,14 +111,17 @@ shinyServer(function(input, output, session){
         }
     })
     
+    #Print trackll info
     output$trackllInfo <- renderText({
         paste("Total number of videos: ", length(trackll$data), sep = " ")
     })
     
+    #Print trackl info
     output$tracklInfo <- renderText({
         paste("Number of tracks in video ",  input$tracklNum, ":  ", length(trackll$data[[input$tracklNum]]), sep ="")
     })
     
+    #Export current state trackll
     observeEvent(input$export, {
         exportTrackll(trackll$data, cores = input$cores);
         output$exportConfirm <- renderText({
@@ -109,7 +129,37 @@ shinyServer(function(input, output, session){
         })
     })
     
-    
+    observeEvent(input$calculateMSD, {
+        if (input$plotMSD){
+            output$plotMSD <- renderPlot({
+                msd.trackll$data <- msd(trackll$data, 
+                    dt = input$dtMSD, 
+                    resolution = input$resolutionMSD,
+                    summarize = input$summarizeMSD, 
+                    cores = input$cores,
+                    plot = input$plotMSD,
+                    output = input$outputMSD)
+            }, width = 800, height = 400)
+        } else {
+            msd.trackll$data <- msd(trackll$data, 
+                dt = input$dtMSD, 
+                resolution = input$resolutionMSD,
+                summarize = input$summarizeMSD, 
+                cores = input$cores,
+                plot = input$plotMSD,
+                output = input$outputMSD)
+            
+        }
+        if (input$outputMSD){
+            output$MSDConfirm <- renderText({
+                paste("MSD calculted. Output exported to: ", getwd(), sep = "")
+            })
+        } else {
+            output$MSDConfirm <- renderText({
+                print("MSD calculated.")
+            })
+        }
+    })
     
     
     
