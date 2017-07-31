@@ -95,11 +95,11 @@ shinyServer(function(input, output, session){
     })
     
     output$trackllInfo <- renderText({
-        paste("Total number of videos:", length(trackll$data), sep = " ")
+        paste("Total number of videos: ", length(trackll$data), sep = " ")
     })
     
     output$tracklInfo <- renderText({
-        paste("Video",  input$tracklNum, "length:", length(trackll$data[[input$tracklNum]]), sep =" ")
+        paste("Number of tracks in video ",  input$tracklNum, ":  ", length(trackll$data[[input$tracklNum]]), sep ="")
     })
     
     observeEvent(input$export, {
