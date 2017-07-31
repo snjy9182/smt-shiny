@@ -6,9 +6,10 @@
 library(shiny)
 library(smt)
 
-shinyUI(fluidPage(
+shinyUI(fluidPage(#theme = "bootstrap.css",
     
-    titlePanel("smt", windowTitle = "smt"),
+    titlePanel(title = div("Single Molecule Tracking", img(src = 'university.logo.small.horizontal.blue.png', height = 40, align = "right")), windowTitle = "smt"),
+
     
     tabsetPanel(
         tabPanel("1. Read Tracks",
@@ -17,7 +18,7 @@ shinyUI(fluidPage(
              
             sidebarPanel(
                  
-                h3("Select Folder"),
+                h3("Select Input Folder"),
                 actionButton(inputId = "folder", 
                     label = "Select any file in the folder...",
                     icon = icon("folder-open")),
@@ -43,10 +44,13 @@ shinyUI(fluidPage(
                     label = h5("Cores for parallel computation:"),
                     min=1, max=parallel::detectCores(logical = F), 
                     value = 1, step = 1),
+                
+                textOutput("readNote"),
                      
                 actionButton(inputId = "read", 
                     label = "Read folder",
                     icon = icon("import", lib = "glyphicon")),
+                
                 textOutput("readConfirm")
             )
                  
@@ -123,13 +127,13 @@ shinyUI(fluidPage(
                 h3("Set Parameters"),
                 
                 numericInput(inputId <- "dtMSD", 
-                    label = h5("Time interval: "),
+                    label = h5("Time interval (dt): "),
                     min = 1,
                     value = 6,
                     step = 1),
                     
                 numericInput(inputId <- "resolutionMSD", 
-                     label = h5("Resolution: "),
+                     label = h5("Resolution (pixels to μM): "),
                      min = 0,
                      value = 0.107),
                 
@@ -137,52 +141,135 @@ shinyUI(fluidPage(
                     label = "Summarize", 
                     value = FALSE),
                 
+                h3("Output"),
+                
                 checkboxInput(inputId = "plotMSD", 
                     label = "Plot", 
                     value = TRUE),
                     
                 checkboxInput(inputId = "outputMSD", 
-                    label = "Output", 
+                    label = "Export file", 
                     value = FALSE),
                     
                 actionButton(inputId = "calculateMSD", 
                     label = "Calculate MSD",
                     icon = icon("stats", lib = "glyphicon")),
+        
                 textOutput("MSDConfirm")
             )
                 
+        ),
+        
+        tabPanel("4. Diffusion Coefficient",
+                 
+                h3("Diffusion Coefficient"),
+                
+                sidebarPanel(
+                 
+                    h3("Set Parameters"),
+                    
+                    numericInput(inputId <- "dtDcoef", 
+                        label = h5("Time interval (dt): "),
+                        min = 1,
+                        value = 6,
+                        step = 1),
+                     
+                    numericInput(inputId <- "rsquareDcoef", 
+                        label = h5("R-squared filter (set to 0 if undesired): "),
+                        min = 0,
+                        value = 0.8, 
+                        step = 0.1),
+                    
+                    numericInput(inputId <- "resolutionDcoef", 
+                        label = h5("Resolution (pixels to μM): "),
+                        min = 0,
+                        value = 0.107, 
+                        step = 0.001),
+                    
+                    numericInput(inputId <- "binwidthDcoef", 
+                        label = h5("Bin width (enter 0 for automatic): "),
+                        min = 0,
+                        value = 0),
+                    
+                    numericInput(inputId <- "t.intervalDcoef", 
+                        label = h5("Time interval between frames (s) : "),
+                        min = 0,
+                        value = 0.01, 
+                        step = 0.001),
+                    
+                    radioButtons(inputId = "methodDcoef", 
+                        label = h5("Method:"), 
+                        c("Static" = 1, 
+                        "Percentage" = 2, 
+                        "Rolling window" = 3), 
+                        selected = 1),
+                    
+                    h3("Output"),
+                     
+                    checkboxInput(inputId = "plotDcoef", 
+                        label = "Plot", 
+                        value = TRUE),
+                     
+                    checkboxInput(inputId = "outputDcoef", 
+                        label = "Export file", 
+                        value = FALSE),
+                    
+                    textOutput("MSDpresent"),
+                     
+                    actionButton(inputId = "calculateDcoef", 
+                        label = "Calculate Dcoef",
+                        icon = icon("stats", lib = "glyphicon")),
+                    
+                    textOutput("DcoefConfirm")
+                 )
+                 
         )
         
     ),
     
     mainPanel(
         
-        plotOutput(outputId = "plotMSD", inline = T),
-
-        h3("Track Info"),
-        textOutput("trackllInfo"),
-        textOutput("tracklInfo"),
-        sliderInput(inputId = "tracklNum", 
-            label = h5("Select video number:"),
-            min = 1, max = 1,
-            value = 1, 
-            step = 1),
-        
-        h3("Export"),
-        actionButton(inputId = "export", 
-            label = "Export to working directory",
-            icon = icon("download")),
-        textOutput("exportConfirm"),
-        
-        h3("Track Plot"),
-        radioButtons(inputId = "plotType", 
-            label = h5("Plot type:"), 
-            c("Coordinate Points" = 1, 
-            "Trajectory Lines" = 2),
-            selected = 1),
-        
-        plotOutput(outputId = "plotPoints",
-                   width = "600px",
-                   height = "600px")
+        tabsetPanel(id = "mainTabsetPanel", 
+            tabPanel("Track Info",
+                     
+                     h3("Track Info"),
+                     textOutput("trackllInfo"),
+                     textOutput("tracklInfo"),
+                     sliderInput(inputId = "tracklNum", 
+                                 label = h5("Select video number:"),
+                                 min = 1, max = 1,
+                                 value = 1, 
+                                 step = 1),
+                     
+                     h3("Export All Tracks"),
+                     actionButton(inputId = "export", 
+                                  label = "Export to working directory",
+                                  icon = icon("download")),
+                     textOutput("exportConfirm"),
+                     
+                     h3("Track Plot"),
+                     radioButtons(inputId = "plotType", 
+                                  label = h5("Plot type:"), 
+                                  c("Coordinate Points" = 1, 
+                                    "Trajectory Lines" = 2),
+                                  selected = 1),
+                     
+                     plotOutput(outputId = "plotPoints", inline = T)
+                     
+            ),
+                     
+            tabPanel("Analysis Plots",
+                     
+                     h3("Mean Squared Displacement"),
+                     
+                     plotOutput(outputId = "plotMSD", inline = T),
+                     
+                     h3("Diffusion Coefficient"),
+                
+                     plotOutput(outputId = "plotDcoef", inline = T)
+                              
+            )
+        )
+    
     )
 ))

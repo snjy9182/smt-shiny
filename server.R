@@ -48,6 +48,10 @@ shinyServer(function(input, output, session){
         })
     })
     
+    output$readNote <- renderText({
+        print("Note: reading may take time.")
+    })
+    
     #Reset
     observeEvent(input$reset, {
         trackll$data <- trackll.save$data
@@ -109,7 +113,7 @@ shinyServer(function(input, output, session){
                 .plotLines(trackll$data[[input$tracklNum]])
             }
         }
-    })
+    }, width = 600, height = 600)
     
     #Print trackll info
     output$trackllInfo <- renderText({
@@ -129,6 +133,7 @@ shinyServer(function(input, output, session){
         })
     })
     
+    #MSD
     observeEvent(input$calculateMSD, {
         if (input$plotMSD){
             output$plotMSD <- renderPlot({
@@ -137,16 +142,20 @@ shinyServer(function(input, output, session){
                     resolution = input$resolutionMSD,
                     summarize = input$summarizeMSD, 
                     cores = input$cores,
-                    plot = input$plotMSD,
+                    plot = TRUE,
                     output = input$outputMSD)
-            }, width = 800, height = 400)
+            }, width = 900, height = 400)
+            
+            updateTabsetPanel(session, "mainTabsetPanel",
+                selected = "Analysis Plots")
+            
         } else {
             msd.trackll$data <- msd(trackll$data, 
                 dt = input$dtMSD, 
                 resolution = input$resolutionMSD,
                 summarize = input$summarizeMSD, 
                 cores = input$cores,
-                plot = input$plotMSD,
+                plot = FALSE,
                 output = input$outputMSD)
             
         }
@@ -161,7 +170,71 @@ shinyServer(function(input, output, session){
         }
     })
     
+    #Dcoef
+    observeEvent(input$calculateDcoef, {
+        if (input$methodDcoef == 1){
+            method <- "static"
+        } else if (input$methodDcoef == 2){
+            method <- "percentage"
+        } else if (input$methodDcoef == 3){
+            method <- "rolling.window"
+        }
+        
+        if (input$binwidthDcoef == 0){
+            binwidth <- NULL
+        } else {
+            binwidth <- input$binwidthDcoef
+        }
+        
+        if (input$plotDcoef){
+            output$plotDcoef <- renderPlot({
+                Dcoef(MSD = msd.trackll$data,
+                    trackll = trackll$data, 
+                    dt = input$dtDcoef, 
+                    rsquare = input$rsquareDcoef, 
+                    resolution = input$resolutionDcoef, 
+                    binwidth = binwidth, 
+                    method = method, 
+                    plot = TRUE, 
+                    output = input$outputDcoef, 
+                    t.interval = input$t.intervalDcoef)
+            }, width = 900, height = 400)
+            
+            updateTabsetPanel(session, "mainTabsetPanel",
+                selected = "Analysis Plots")
+            
+        } else {
+            Dcoef(MSD = msd.trackll$data,
+                trackll = trackll$data, 
+                dt = input$dtDcoef, 
+                rsquare = input$rsquareDcoef, 
+                resolution = input$resolutionDcoef, 
+                binwidth = binwidth, 
+                method = method, 
+                plot = FALSE, 
+                output = input$outputDcoef, 
+                t.interval = input$t.intervalDcoef)
+            
+        }
+        if (input$outputDcoef){
+            output$DcoefConfirm <- renderText({
+                paste("Dcoef calculted. Output exported to: ", getwd(), sep = "")
+            })
+        } else {
+            output$DcoefConfirm <- renderText({
+                print("Dcoef calculated.")
+            })
+        }
+    })
     
+    #MSD present notification
+    output$MSDpresent <- renderText({
+        if (is.null(msd.trackll$data)){
+            paste("WARNING: MSD has not been calculated.")
+        } else {
+            paste("MSD already calculated, ready for diffusion coefficient.")
+        }
+    })
     
     
     
