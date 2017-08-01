@@ -8,9 +8,10 @@ library(smt)
 
 shinyUI(fluidPage(#theme = "bootstrap.css",
     
-    titlePanel(title = div("Single Molecule Tracking", img(src = 'university.logo.small.horizontal.blue.png', height = 40, align = "right")), windowTitle = "smt"),
+    titlePanel(#title = "Single Molecule Tracking",
+        title = div("Single Molecule Tracking", img(src = 'university.logo.small.horizontal.blue.png', height = 40, align = "right")), 
+        windowTitle = "smt"),
 
-    
     tabsetPanel(
         tabPanel("1. Read Tracks",
              
@@ -34,11 +35,10 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                     selected = 2),
                      
                 checkboxGroupInput(inputId = "parameters", 
-                    label = h5("Parameters:"), 
-                    choices =  c("Merge" = 1,
-                    "Use absolute coordinates" = 2,
-                    "Keep frame record" = 3), 
-                    selected =  3),
+                    label = h5("More options:"), 
+                    choices =  c("Use absolute coordinates" = 1,
+                                 "Keep frame record" = 2),
+                    selected =  2),
                      
                 sliderInput(inputId = "cores", 
                     label = h5("Cores for parallel computation:"),
@@ -112,9 +112,14 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                 actionButton(inputId = "mask", 
                     label = "Mask",
                     icon = icon("braille")),
-                textOutput("maskConfirm")
+                textOutput("maskConfirm"),
+                
+                h3("Merge"),
+                actionButton(inputId = "merge", 
+                             label = "Merge",
+                             icon = icon("compress")),
+                textOutput("mergeConfirm")
             )
-                 
                  
         ),
         
@@ -232,41 +237,41 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
         tabsetPanel(id = "mainTabsetPanel", 
             tabPanel("Track Info",
                      
-                     h3("Track Info"),
-                     textOutput("trackllInfo"),
-                     textOutput("tracklInfo"),
-                     sliderInput(inputId = "tracklNum", 
-                                 label = h5("Select video number:"),
-                                 min = 1, max = 1,
-                                 value = 1, 
-                                 step = 1),
+                h3("Track Info"),
+                textOutput("trackllInfo"),
+                textOutput("tracklInfo"),
+                sliderInput(inputId = "tracklNum", 
+                    label = h5("Select video number:"),
+                    min = 1, max = 1,
+                    value = 1, 
+                    step = 1),
                      
-                     h3("Export All Tracks"),
-                     actionButton(inputId = "export", 
-                                  label = "Export to working directory",
-                                  icon = icon("download")),
-                     textOutput("exportConfirm"),
+                h3("Export All Tracks"),
+                actionButton(inputId = "export", 
+                    label = "Export to working directory",
+                    icon = icon("download")),
+                    textOutput("exportConfirm"),
                      
-                     h3("Track Plot"),
-                     radioButtons(inputId = "plotType", 
-                                  label = h5("Plot type:"), 
-                                  c("Coordinate Points" = 1, 
-                                    "Trajectory Lines" = 2),
-                                  selected = 1),
+                h3("Track Plot"),
+                radioButtons(inputId = "plotType", 
+                    label = h5("Plot type:"), 
+                    c("Coordinate Points" = 1, 
+                    "Trajectory Lines" = 2),
+                    selected = 1),
                      
-                     plotOutput(outputId = "plotPoints", inline = T)
-                     
+                plotOutput(outputId = "plotPoints", inline = T)
+                        
             ),
                      
             tabPanel("Analysis Plots",
                      
-                     h3("Mean Squared Displacement"),
+                h3("Mean Squared Displacement"),
                      
-                     plotOutput(outputId = "plotMSD", inline = T),
+                plotOutput(outputId = "plotMSD", inline = T),
                      
-                     h3("Diffusion Coefficient"),
-                
-                     plotOutput(outputId = "plotDcoef", inline = T)
+                h3("Diffusion Coefficient"),
+                        
+                plotOutput(outputId = "plotDcoef", inline = T)
                               
             )
         )

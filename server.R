@@ -23,25 +23,20 @@ shinyServer(function(input, output, session){
     
     #Read
     observeEvent(input$read, {
-        merge = F;
         ab.track = F;
         frameRecord = F;
         for(i in 1:length(input$parameters)){
             if (input$parameters[[i]] == 1){
-                merge = T;
-            } else if (input$parameters[[i]] == 2) {
                 ab.track = T;
-            } else if (input$parameters[[i]] == 3){
+            } else if (input$parameters[[i]] == 2) {
                 frameRecord = T;
             }
         }
         trackll$data <- createTrackll(folder = folder$data,
-                                 input = input$input,
-                                 merge = merge,
-                                 ab.track = ab.track,
-                                 mask = FALSE,
-                                 cores = input$cores,
-                                 frameRecord = frameRecord)
+            input = input$input,
+            ab.track = ab.track,
+            cores = input$cores,
+            frameRecord = frameRecord)
         trackll.save$data <- trackll$data;
         output$readConfirm <- renderText({
             print("Files read.")
@@ -59,7 +54,10 @@ shinyServer(function(input, output, session){
     
     #Link
     observeEvent(input$link, {
-        trackll$data <- linkSkippedFrames(trackll = trackll$data, tolerance = input$tolerance, maxSkip = input$maxSkip, cores = input$cores)
+        trackll$data <- linkSkippedFrames(trackll = trackll$data, 
+            tolerance = input$tolerance, 
+            maxSkip = input$maxSkip, 
+            cores = input$cores)
         output$linkConfirm <- renderText({
             print("Linking completed.")
         })
@@ -68,9 +66,11 @@ shinyServer(function(input, output, session){
     #Filter
     observeEvent(input$filter, {
         if (input$maxFilter == 0){
-            trackll$data <- filterTrack(trackll$data, filter = c(min = input$minFilter, max = Inf))
+            trackll$data <- filterTrack(trackll$data, 
+                filter = c(min = input$minFilter, max = Inf))
         } else {
-            trackll$data <- filterTrack(trackll$data, filter = c(min = input$minFilter, max = input$maxFilter))
+            trackll$data <- filterTrack(trackll$data, 
+                filter = c(min = input$minFilter, max = input$maxFilter))
         }
         output$filterConfirm <- renderText({
             print("Filtering completed.")
@@ -79,7 +79,8 @@ shinyServer(function(input, output, session){
     
     #Trim
     observeEvent(input$trim, {
-        trackll$data <- trimTrack(trackll$data, trimmer = c(min = input$trimRange[[1]], max = input$trimRange[[2]]))
+        trackll$data <- trimTrack(trackll$data, 
+                trimmer = c(min = input$trimRange[[1]], max = input$trimRange[[2]]))
         output$trimConfirm <- renderText({
             print("Trimming completed.")
         })
@@ -94,6 +95,14 @@ shinyServer(function(input, output, session){
         }
         output$maskConfirm <- renderText({
             print("Masking completed.")
+        })
+    })
+    
+    #Mask
+    observeEvent(input$merge, {
+        trackll$data <- mergeTracks(folder$data, trackll$data)
+        output$mergeConfirm <- renderText({
+            print("Merging completed.")
         })
     })
     
@@ -235,15 +244,5 @@ shinyServer(function(input, output, session){
             paste("MSD already calculated, ready for diffusion coefficient.")
         }
     })
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
 })
