@@ -197,7 +197,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                         value = 0),
                     
                     numericInput(inputId <- "t.intervalDcoef", 
-                        label = h5("Time interval between frames (s) : "),
+                        label = h5("Time interval between frames (s): "),
                         min = 0,
                         value = 0.01, 
                         step = 0.001),
@@ -228,6 +228,72 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                     textOutput("DcoefConfirm")
                  )
                  
+        ),
+        
+        tabPanel("5. Cummulative Distribution Function",
+                 
+                 h3("Cummulative Distribution Function"),
+                 
+                 sidebarPanel(
+                     
+                     h3("Displacement CDF"),
+                     
+                    numericInput(inputId <- "dtDCDF", 
+                        label = h5("Time interval (dt): "),
+                        min = 1,
+                        value = 6,
+                        step = 1),
+                     
+                    numericInput(inputId <- "resolutionDCDF", 
+                        label = h5("Resolution (pixels to μM): "),
+                        min = 0,
+                        value = 0.107),
+                                    
+                    checkboxInput(inputId = "plotDCDF", 
+                        label = "Plot", 
+                        value = TRUE),
+                     
+                    checkboxInput(inputId = "outputDCDF", 
+                        label = "Export file", 
+                            value = FALSE),
+                     
+                    actionButton(inputId = "calculateDCDF", 
+                        label = "Calculate displacement CDF",
+                        icon = icon("stats", lib = "glyphicon")),
+                     
+                     textOutput("DCDFConfirm"),
+                     
+                     h3("Fit CDF"),
+                     
+                    numericInput(inputId <- "t.intervalFCDF", 
+                        label = h5("Time interval between frames (s): "),
+                        min = 0,
+                        value = 0.01, 
+                        step = 0.001),
+                    
+                    numericInput(inputId <- "maxiter.searchFCDF", 
+                        label = h5("Maximum iteration in random search start value process: "),
+                        min = 0,
+                        value = 1e3, 
+                        step = 10),
+                    
+                    numericInput(inputId <- "maxiter.optimFCDF", 
+                        label = h5("Maximum iteration in local optimization process: "),
+                        min = 0,
+                        value = 1e3, 
+                        step = 10),
+                    
+                    checkboxInput(inputId = "outputFCDF", 
+                        label = "Export file", 
+                        value = FALSE),
+                    
+                    actionButton(inputId = "calculateFCDF", 
+                        label = "Fit CDF",
+                        icon = icon("stats", lib = "glyphicon")),
+                    
+                    textOutput("FCDFConfirm")
+                     
+                )
         )
         
     ),
@@ -257,7 +323,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                     label = h5("Plot type:"), 
                     c("Coordinate Points" = 1, 
                     "Trajectory Lines" = 2),
-                    selected = 1),
+                    selected = 2),
                      
                 plotOutput(outputId = "plotPoints", inline = T)
                         
@@ -271,7 +337,11 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                      
                 h3("Diffusion Coefficient"),
                         
-                plotOutput(outputId = "plotDcoef", inline = T)
+                plotOutput(outputId = "plotDcoef", inline = T),
+                
+                h3("Displacement CDF"),
+                
+                plotOutput(outputId = "plotDCDF", inline = T)
                               
             )
         )

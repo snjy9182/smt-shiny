@@ -11,7 +11,8 @@ shinyServer(function(input, output, session){
     #Instantiate reactive values
     trackll <- reactiveValues(data= NULL);
     trackll.save <- reactiveValues(data= NULL);
-    msd.trackll <- reactiveValues(data= NULL)
+    msd.trackll <- reactiveValues(data= NULL);
+    cdf <- reactiveValues(data= NULL);
     folder <- reactiveValues(data = NULL);
     
     observeEvent(input$folder, {
@@ -146,27 +147,26 @@ shinyServer(function(input, output, session){
     observeEvent(input$calculateMSD, {
         if (input$plotMSD){
             output$plotMSD <- renderPlot({
-                msd.trackll$data <- msd(trackll$data, 
+                msd.trackll$data <- isolate(msd(trackll$data, 
                     dt = input$dtMSD, 
                     resolution = input$resolutionMSD,
                     summarize = input$summarizeMSD, 
                     cores = input$cores,
                     plot = TRUE,
-                    output = input$outputMSD)
+                    output = input$outputMSD))
             }, width = 900, height = 400)
             
             updateTabsetPanel(session, "mainTabsetPanel",
                 selected = "Analysis Plots")
             
         } else {
-            msd.trackll$data <- msd(trackll$data, 
+            msd.trackll$data <- isolate(msd(trackll$data, 
                 dt = input$dtMSD, 
                 resolution = input$resolutionMSD,
                 summarize = input$summarizeMSD, 
                 cores = input$cores,
                 plot = FALSE,
-                output = input$outputMSD)
-            
+                output = input$outputMSD))
         }
         if (input$outputMSD){
             output$MSDConfirm <- renderText({
@@ -197,7 +197,7 @@ shinyServer(function(input, output, session){
         
         if (input$plotDcoef){
             output$plotDcoef <- renderPlot({
-                Dcoef(MSD = msd.trackll$data,
+                isolate(Dcoef(MSD = msd.trackll$data,
                     trackll = trackll$data, 
                     dt = input$dtDcoef, 
                     rsquare = input$rsquareDcoef, 
@@ -206,14 +206,14 @@ shinyServer(function(input, output, session){
                     method = method, 
                     plot = TRUE, 
                     output = input$outputDcoef, 
-                    t.interval = input$t.intervalDcoef)
+                    t.interval = input$t.intervalDcoef))
             }, width = 900, height = 400)
             
             updateTabsetPanel(session, "mainTabsetPanel",
                 selected = "Analysis Plots")
             
         } else {
-            Dcoef(MSD = msd.trackll$data,
+            isolate(Dcoef(MSD = msd.trackll$data,
                 trackll = trackll$data, 
                 dt = input$dtDcoef, 
                 rsquare = input$rsquareDcoef, 
@@ -222,7 +222,7 @@ shinyServer(function(input, output, session){
                 method = method, 
                 plot = FALSE, 
                 output = input$outputDcoef, 
-                t.interval = input$t.intervalDcoef)
+                t.interval = input$t.intervalDcoef))
             
         }
         if (input$outputDcoef){
@@ -244,5 +244,41 @@ shinyServer(function(input, output, session){
             paste("MSD already calculated, ready for diffusion coefficient.")
         }
     })
+    
+    #Displacement CDF
+    observeEvent(input$calculateDCDF, {
+        if (input$plotDCDF){
+            output$plotDCDF <- renderPlot({
+                cdf$data <- isolate(displacementCDF(trackll = trackll$data,
+                    dt = input$dtDCDF,
+                    resolution = input$resolutionDCDF, 
+                    plot = TRUE,
+                    output = input$outputDCDF))
+            }, width = 900, height = 600)
+            
+            updateTabsetPanel(session, "mainTabsetPanel",
+                              selected = "Analysis Plots")
+            
+        } else {
+            cdf$data <- isolate(displacementCDF(trackll = trackll$data,
+                dt = input$dtDCDF,
+                resolution = input$resolutionDCDF, 
+                plot = FALSE,
+                output = input$outputDCDF))
+            
+        }
+        if (input$outputDCDF){
+            output$DCDFConfirm <- renderText({
+                paste("Displacement CDF calculted. Output exported to: ", getwd(), sep = "")
+            })
+        } else {
+            output$DCDFConfirm <- renderText({
+                print("Displacement CDF calculated.")
+            })
+        }
+    })
+    
+    #Fit CDF 
+    
 
 })
