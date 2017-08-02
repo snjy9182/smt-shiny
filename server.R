@@ -13,6 +13,7 @@ shinyServer(function(input, output, session){
     trackll.save <- reactiveValues(data= NULL);
     msd.trackll <- reactiveValues(data= NULL);
     cdf <- reactiveValues(data= NULL);
+    fitcdf <- reactiveValues(data= NULL);
     folder <- reactiveValues(data = NULL);
     
     observeEvent(input$folder, {
@@ -279,6 +280,62 @@ shinyServer(function(input, output, session){
     })
     
     #Fit CDF 
-    
+    observeEvent(input$calculateFCDF, {
+        output$plotFCDF <- renderPlot({
+            if (isolate(input$componentsFCDF) == 1){
+                fitcdf$data <- isolate(fitCDF(cdf = cdf$data, 
+                    components="one",
+                    start=list(
+                        oneCompFit=list(D=c(input$D_1,input$D_2))
+                    ),
+                    t.interval=input$t.intervalFCDF,
+                    maxiter.search=input$maxiter.searchFCDF,
+                    maxiter.optim=input$maxiter.optimFCDF,
+                    output = input$outputFCDF,
+                    seed=NULL))
+            } else if (isolate(input$componentsFCDF) == 2){
+                fitcdf$data <- isolate(fitCDF(cdf = cdf$data, 
+                    components="two",
+                    start=list(
+                        twoCompFit=list(D1=c(input$D1_1,input$D1_2),
+                            D2=c(input$D2_1,input$D2_2),
+                            alpha=c(input$alpha_1,input$alpha_2))
+                    ),
+                    t.interval=input$t.intervalFCDF,
+                    maxiter.search=input$maxiter.searchFCDF,
+                    maxiter.optim=input$maxiter.optimFCDF,
+                    output = input$outputFCDF,
+                    seed=NULL))
+            } else if (isolate(input$componentsFCDF) == 3){
+                fitcdf$data <- isolate(fitCDF(cdf = cdf$data, 
+                    components="three",
+                    start=list(
+                        threeCompFit=list(D1=c(input$D1_1,input$D1_2), 
+                            D2=c(input$D2_1,input$D2_2), 
+                            D3=c(input$D3_1,input$D3_2), 
+                            alpha=c(input$alpha_1,input$alpha_2),
+                            beta=c(input$beta_1,input$beta_2))
+                    ),
+                    t.interval=input$t.intervalFCDF,
+                    maxiter.search=input$maxiter.searchFCDF,
+                    maxiter.optim=input$maxiter.optimFCDF,
+                    output = input$outputFCDF,
+                    seed=NULL))
+            }
+        }, width = 600, height = 600)
+        
+        updateTabsetPanel(session, "mainTabsetPanel",
+                          selected = "Analysis Plots")
+        
+        if (input$outputFCDF){
+            output$FCDFConfirm <- renderText({
+                paste("Fit CDF calculted. Output exported to: ", getwd(), sep = "")
+            })
+        } else {
+            output$FCDFConfirm <- renderText({
+                print("Fit CDF calculated.")
+            })
+        }
+    })
 
 })

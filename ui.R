@@ -264,31 +264,122 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                      textOutput("DCDFConfirm"),
                      
                      h3("Fit CDF"),
-                     
+                    
                     numericInput(inputId <- "t.intervalFCDF", 
-                        label = h5("Time interval between frames (s): "),
-                        min = 0,
-                        value = 0.01, 
-                        step = 0.001),
+                                 label = h5("Time interval between frames (s): "),
+                                 min = 0,
+                                 value = 0.01, 
+                                 step = 0.001),
                     
                     numericInput(inputId <- "maxiter.searchFCDF", 
-                        label = h5("Maximum iteration in random search start value process: "),
-                        min = 0,
-                        value = 1e3, 
-                        step = 10),
+                                 label = h5("Maximum iteration in random search start value process: "),
+                                 min = 0,
+                                 value = 1e3, 
+                                 step = 10),
                     
                     numericInput(inputId <- "maxiter.optimFCDF", 
-                        label = h5("Maximum iteration in local optimization process: "),
-                        min = 0,
-                        value = 1e3, 
-                        step = 10),
+                                 label = h5("Maximum iteration in local optimization process: "),
+                                 min = 0,
+                                 value = 1e3, 
+                                 step = 10),
+                    
+                    radioButtons(inputId = "componentsFCDF", 
+                        label = h5("Components:"), 
+                        c("One" = 1, 
+                        "Two" = 2, 
+                        "Three" = 3), 
+                        selected = 2),
+                    
+                    conditionalPanel(
+                        condition = "input.componentsFCDF == 1",
+                        numericInput(inputId <- "D_1", 
+                            label = h5("D start value: "),
+                            value = 1e-3),
+                        
+                        numericInput(inputId <- "D_2", 
+                            label = h5("D start value: "), 
+                            value = 2)
+                    ),
+                    
+                    conditionalPanel(
+                        condition = "input.componentsFCDF == 2",
+                        numericInput(inputId <- "D1_1", 
+                            label = h5("D1 start value: "),
+                            value = 1e-3),
+                        
+                        numericInput(inputId <- "D1_2", 
+                            label = h5("D1 start value: "), 
+                            value = 2),
+                        
+                        numericInput(inputId <- "D2_1", 
+                            label = h5("D2 start value: "),
+                            value = 1e-3),
+                        
+                        numericInput(inputId <- "D2_2", 
+                            label = h5("D2 start value: "), 
+                            value = 2), 
+                        
+                        numericInput(inputId <- "alpha_1", 
+                            label = h5("Alpha start value: "),
+                            value = 1e-3),
+                        
+                        numericInput(inputId <- "alpha_2", 
+                            label = h5("Alpha start value: "),
+                            value = 1)
+                    ),
+                    
+                    conditionalPanel(
+                        condition = "input.componentsFCDF == 3",
+                        numericInput(inputId <- "D1_1", 
+                            label = h5("D1 start value: "),
+                                     value = 1e-3),
+                        
+                        numericInput(inputId <- "D1_2", 
+                            label = h5("D1 start value: "), 
+                            value = 2),
+                        
+                        numericInput(inputId <- "D2_1", 
+                            label = h5("D2 start value: "),
+                            value = 1e-3),
+                        
+                        numericInput(inputId <- "D2_2", 
+                            label = h5("D2 start value: "), 
+                            value = 2), 
+                        
+                        numericInput(inputId <- "D3_1", 
+                            label = h5("D3 start value: "),
+                            value = 1e-3),
+                        
+                        numericInput(inputId <- "D3_2", 
+                            label = h5("D3 start value: "), 
+                            value = 2),
+                    
+                        numericInput(inputId <- "alpha_1", 
+                            label = h5("Alpha start value: "),
+                            value = 1e-3,
+                            step = 1e-3),
+                        
+                        numericInput(inputId <- "alpha_2", 
+                            label = h5("Alpha start value: "),
+                            value = 1), 
+                        
+                        numericInput(inputId <- "beta_1", 
+                            label = h5("Beta start value: "),
+                            value = 1e-3,
+                            step = 1e-3),
+                        
+                        numericInput(inputId <- "beta_2", 
+                            label = h5("Beta start value: "),
+                            value = 1)
+
+                    ),
                     
                     checkboxInput(inputId = "outputFCDF", 
                         label = "Export file", 
                         value = FALSE),
                     
                     actionButton(inputId = "calculateFCDF", 
-                        label = "Fit CDF",
+                        label = "Fit CDF and plot",
                         icon = icon("stats", lib = "glyphicon")),
                     
                     textOutput("FCDFConfirm")
@@ -341,7 +432,11 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                 
                 h3("Displacement CDF"),
                 
-                plotOutput(outputId = "plotDCDF", inline = T)
+                plotOutput(outputId = "plotDCDF", inline = T), 
+                
+                h3("Fit CDF"),
+                
+                plotOutput(outputId = "plotFCDF", inline = T)
                               
             )
         )
