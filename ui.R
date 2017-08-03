@@ -5,11 +5,16 @@
 
 library(shiny)
 library(smt)
+if (!require(EBImage)) {
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("EBImage")
+}
+library(EBImage)
 
 shinyUI(fluidPage(#theme = "bootstrap.css",
     
-    titlePanel(#title = "Single Molecule Tracking",
-        title = div("Single Molecule Tracking", img(src = 'university.logo.small.horizontal.blue.png', height = 40, align = "right")), 
+    titlePanel(title = "Single Molecule Tracking",
+        #title = div("Single Molecule Tracking", img(src = 'university.logo.small.horizontal.blue.png', height = 40, align = "right")), 
         windowTitle = "smt"),
 
     tabsetPanel(
@@ -153,7 +158,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                     value = TRUE),
                     
                 checkboxInput(inputId = "outputMSD", 
-                    label = "Export file", 
+                    label = "Export .csv", 
                     value = FALSE),
                     
                 actionButton(inputId = "calculateMSD", 
@@ -216,7 +221,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                         value = TRUE),
                      
                     checkboxInput(inputId = "outputDcoef", 
-                        label = "Export file", 
+                        label = "Export .csv", 
                         value = FALSE),
                     
                     textOutput("MSDpresent"),
@@ -254,7 +259,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                         value = TRUE),
                      
                     checkboxInput(inputId = "outputDCDF", 
-                        label = "Export file", 
+                        label = "Export .csv", 
                             value = FALSE),
                      
                     actionButton(inputId = "calculateDCDF", 
@@ -375,7 +380,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                     ),
                     
                     checkboxInput(inputId = "outputFCDF", 
-                        label = "Export file", 
+                        label = "Export .csv", 
                         value = FALSE),
                     
                     actionButton(inputId = "calculateFCDF", 
@@ -432,12 +437,8 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                 
                 h3("Displacement CDF"),
                 
-                plotOutput(outputId = "plotDCDF", inline = T), 
+                plotOutput(outputId = "plotDCDF", inline = T) 
                 
-                h3("Fit CDF"),
-                
-                plotOutput(outputId = "plotFCDF", inline = T)
-                              
             )
         )
     

@@ -5,6 +5,11 @@
 
 library(shiny)
 library(smt)
+if (!require(EBImage)) {
+    source("https://bioconductor.org/biocLite.R")
+    biocLite("EBImage")
+}
+library(EBImage)
 
 shinyServer(function(input, output, session){
     
@@ -171,7 +176,7 @@ shinyServer(function(input, output, session){
         }
         if (input$outputMSD){
             output$MSDConfirm <- renderText({
-                paste("MSD calculted. Output exported to: ", getwd(), sep = "")
+                paste("MSD calculted. Files exported to: ", getwd(), sep = "")
             })
         } else {
             output$MSDConfirm <- renderText({
@@ -228,7 +233,7 @@ shinyServer(function(input, output, session){
         }
         if (input$outputDcoef){
             output$DcoefConfirm <- renderText({
-                paste("Dcoef calculted. Output exported to: ", getwd(), sep = "")
+                paste("Dcoef calculted. Files exported to: ", getwd(), sep = "")
             })
         } else {
             output$DcoefConfirm <- renderText({
@@ -270,7 +275,7 @@ shinyServer(function(input, output, session){
         }
         if (input$outputDCDF){
             output$DCDFConfirm <- renderText({
-                paste("Displacement CDF calculted. Output exported to: ", getwd(), sep = "")
+                paste("Displacement CDF calculted. Files exported to: ", getwd(), sep = "")
             })
         } else {
             output$DCDFConfirm <- renderText({
@@ -281,7 +286,6 @@ shinyServer(function(input, output, session){
     
     #Fit CDF 
     observeEvent(input$calculateFCDF, {
-        output$plotFCDF <- renderPlot({
             if (isolate(input$componentsFCDF) == 1){
                 fitcdf$data <- isolate(fitCDF(cdf = cdf$data, 
                     components="one",
@@ -322,18 +326,13 @@ shinyServer(function(input, output, session){
                     output = input$outputFCDF,
                     seed=NULL))
             }
-        }, width = 600, height = 600)
-        
-        updateTabsetPanel(session, "mainTabsetPanel",
-                          selected = "Analysis Plots")
-        
         if (input$outputFCDF){
             output$FCDFConfirm <- renderText({
-                paste("Fit CDF calculted. Output exported to: ", getwd(), sep = "")
+                paste("Fit CDF calculated. Files/plots exported to: ", getwd(), sep = "")
             })
         } else {
             output$FCDFConfirm <- renderText({
-                print("Fit CDF calculated.")
+                paste("Fit CDF calculated. Plots exported to: ", getwd(), sep = "")
             })
         }
     })
