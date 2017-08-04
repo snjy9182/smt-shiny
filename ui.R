@@ -5,11 +5,12 @@
 
 library(shiny)
 library(smt)
-if (!require(EBImage)) {
-    source("https://bioconductor.org/biocLite.R")
-    biocLite("EBImage")
-}
+    #source("https://bioconductor.org/biocLite.R")
+    #biocLite("EBImage")
+    #devtools::install_github("snjy9182/smt-beta")
 library(EBImage)
+library(pkgconfig)
+
 
 shinyUI(fluidPage(#theme = "bootstrap.css",
     

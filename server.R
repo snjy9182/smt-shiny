@@ -5,11 +5,8 @@
 
 library(shiny)
 library(smt)
-if (!require(EBImage)) {
-    source("https://bioconductor.org/biocLite.R")
-    biocLite("EBImage")
-}
 library(EBImage)
+library(pkgconfig)
 
 shinyServer(function(input, output, session){
     
