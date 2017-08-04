@@ -298,83 +298,83 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                     conditionalPanel(
                         condition = "input.componentsFCDF == 1",
                         numericInput(inputId <- "D_1", 
-                            label = h5("D start value: "),
+                            label = h5("D min value: "),
                             value = 1e-3),
                         
                         numericInput(inputId <- "D_2", 
-                            label = h5("D start value: "), 
+                            label = h5("D max value: "), 
                             value = 2)
                     ),
                     
                     conditionalPanel(
                         condition = "input.componentsFCDF == 2",
                         numericInput(inputId <- "D1_1", 
-                            label = h5("D1 start value: "),
+                            label = h5("D1 min value: "),
                             value = 1e-3),
                         
                         numericInput(inputId <- "D1_2", 
-                            label = h5("D1 start value: "), 
+                            label = h5("D1 max value: "), 
                             value = 2),
                         
                         numericInput(inputId <- "D2_1", 
-                            label = h5("D2 start value: "),
+                            label = h5("D2 min value: "),
                             value = 1e-3),
                         
                         numericInput(inputId <- "D2_2", 
-                            label = h5("D2 start value: "), 
+                            label = h5("D2 max value: "), 
                             value = 2), 
                         
                         numericInput(inputId <- "alpha_1", 
-                            label = h5("Alpha start value: "),
+                            label = h5("Alpha min value: "),
                             value = 1e-3),
                         
                         numericInput(inputId <- "alpha_2", 
-                            label = h5("Alpha start value: "),
+                            label = h5("Alpha max value: "),
                             value = 1)
                     ),
                     
                     conditionalPanel(
                         condition = "input.componentsFCDF == 3",
                         numericInput(inputId <- "D1_1", 
-                            label = h5("D1 start value: "),
+                            label = h5("D1 min value: "),
                                      value = 1e-3),
                         
                         numericInput(inputId <- "D1_2", 
-                            label = h5("D1 start value: "), 
+                            label = h5("D1 max value: "), 
                             value = 2),
                         
                         numericInput(inputId <- "D2_1", 
-                            label = h5("D2 start value: "),
+                            label = h5("D2 min value: "),
                             value = 1e-3),
                         
                         numericInput(inputId <- "D2_2", 
-                            label = h5("D2 start value: "), 
+                            label = h5("D2 max value: "), 
                             value = 2), 
                         
                         numericInput(inputId <- "D3_1", 
-                            label = h5("D3 start value: "),
+                            label = h5("D3 min value: "),
                             value = 1e-3),
                         
                         numericInput(inputId <- "D3_2", 
-                            label = h5("D3 start value: "), 
+                            label = h5("D3 max value: "), 
                             value = 2),
                     
                         numericInput(inputId <- "alpha_1", 
-                            label = h5("Alpha start value: "),
+                            label = h5("Alpha min value: "),
                             value = 1e-3,
                             step = 1e-3),
                         
                         numericInput(inputId <- "alpha_2", 
-                            label = h5("Alpha start value: "),
+                            label = h5("Alpha max value: "),
                             value = 1), 
                         
                         numericInput(inputId <- "beta_1", 
-                            label = h5("Beta start value: "),
+                            label = h5("Beta min value: "),
                             value = 1e-3,
                             step = 1e-3),
                         
                         numericInput(inputId <- "beta_2", 
-                            label = h5("Beta start value: "),
+                            label = h5("Beta max value: "),
                             value = 1)
 
                     ),
