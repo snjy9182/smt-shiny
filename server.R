@@ -58,6 +58,9 @@ shinyServer(function(input, output, session){
     #Reset
     observeEvent(input$reset, {
         trackll$data <- trackll.save$data
+        output$resetConfirm <- renderText({
+            print("Trackll reset.")
+        })
     })
     
     #Link
@@ -171,10 +174,6 @@ shinyServer(function(input, output, session){
                         plot = TRUE,
                         output = input$outputMSD))
                 }, width = 900, height = 400)
-                
-                updateTabsetPanel(session, "mainTabsetPanel",
-                    selected = "Analysis Plots")
-                
             } else {
                 msd.trackll$data <- isolate(msd(trackll$data, 
                     dt = input$dtMSD, 

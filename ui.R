@@ -71,6 +71,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                              actionButton(inputId = "reset", 
                                           label = "Reset",
                                           icon = icon("undo")),
+                             textOutput("resetConfirm"),
                              
                              h3("Link"),
                              numericInput(inputId <- "tolerance", 
@@ -231,6 +232,44 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                                     )
                                     
                            ),
+                           
+                           #tabPanel("Normal Distribution",
+                            #        
+                            #        h3("Normal Distibution"),
+                            #        
+                            #        sidebarPanel(
+                            #            
+                            #            h3("Set Parameters"),
+                            #            
+                            #            checkboxInput(inputId = "log.transformND", 
+                            #                          label = "Logarithmic transformation", 
+                            #                          value = FALSE),
+                            #            
+                            #            numericInput(inputId <- "binwidthND", 
+                            #                         label = h5("Bin width (enter 0 for automatic): "),
+                            #                         min = 0,
+                            #                         value = 0),
+                            #            
+                            #            h3("Output"),
+                            #            
+                            #            checkboxInput(inputId = "combine.plotND", 
+                            #                          label = "Combine plot", 
+                            #                          value = FALSE),
+                            #            
+                            #            checkboxInput(inputId = "outputND", 
+                            #                          label = "Export .csv", 
+                            #                          value = FALSE),
+                            #            
+                            #            textOutput("Dcoefpresent"),
+                            #            
+                            #            withBusyIndicatorUI(actionButton(inputId = "calculateND", 
+                            #                                             label = "Calculate ND",
+                            #                                             icon = icon("stats", lib = "glyphicon"))),
+                            #            
+                            #            textOutput("NDConfirm")
+                            #        )
+                            #        
+                           #),
                            
                            tabPanel("Cummulative Distribution Function",
                                     
@@ -430,6 +469,7 @@ shinyUI(fluidPage(#theme = "bootstrap.css",
                                         textOutput("DTConfirm")
                                     )
                            )
+                           
                 )
                 
     ),
