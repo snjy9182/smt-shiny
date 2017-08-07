@@ -4,9 +4,10 @@
 #### Date: July 28, 2017
 
 library(shiny)
+library(shinyjs)
 library(smt)
-library(EBImage)
-library(pkgconfig)
+
+source("helpers.R")
 
 shinyServer(function(input, output, session){
     
@@ -16,6 +17,7 @@ shinyServer(function(input, output, session){
     msd.trackll <- reactiveValues(data= NULL);
     cdf <- reactiveValues(data= NULL);
     fitcdf <- reactiveValues(data= NULL);
+    dt <- reactiveValues(data= NULL);
     folder <- reactiveValues(data = NULL);
     
     observeEvent(input$folder, {
@@ -27,23 +29,25 @@ shinyServer(function(input, output, session){
     
     #Read
     observeEvent(input$read, {
-        ab.track = F;
-        frameRecord = F;
-        for(i in 1:length(input$parameters)){
-            if (input$parameters[[i]] == 1){
-                ab.track = T;
-            } else if (input$parameters[[i]] == 2) {
-                frameRecord = T;
+        withBusyIndicatorServer("read", {    
+            ab.track = F;
+            frameRecord = F;
+            for(i in 1:length(input$parameters)){
+                if (input$parameters[[i]] == 1){
+                    ab.track = T;
+                } else if (input$parameters[[i]] == 2) {
+                    frameRecord = T;
+                }
             }
-        }
-        trackll$data <- createTrackll(folder = folder$data,
-            input = input$input,
-            ab.track = ab.track,
-            cores = input$cores,
-            frameRecord = frameRecord)
-        trackll.save$data <- trackll$data;
-        output$readConfirm <- renderText({
-            print("Files read.")
+            trackll$data <- createTrackll(folder = folder$data,
+                input = input$input,
+                ab.track = ab.track,
+                cores = input$cores,
+                frameRecord = frameRecord)
+            trackll.save$data <- trackll$data;
+            output$readConfirm <- renderText({
+                print("Files read.")
+            })
         })
     })
     
@@ -58,55 +62,61 @@ shinyServer(function(input, output, session){
     
     #Link
     observeEvent(input$link, {
-        trackll$data <- linkSkippedFrames(trackll = trackll$data, 
-            tolerance = input$tolerance, 
-            maxSkip = input$maxSkip, 
-            cores = input$cores)
-        output$linkConfirm <- renderText({
-            print("Linking completed.")
+        withBusyIndicatorServer("link",{    
+            trackll$data <- linkSkippedFrames(trackll = trackll$data, 
+                tolerance = input$tolerance, 
+                maxSkip = input$maxSkip, 
+                cores = input$cores)
+            output$linkConfirm <- renderText({
+                print("Linking completed.")
+            })
         })
     })
     
     #Filter
     observeEvent(input$filter, {
-        if (input$maxFilter == 0){
-            trackll$data <- filterTrack(trackll$data, 
-                filter = c(min = input$minFilter, max = Inf))
-        } else {
-            trackll$data <- filterTrack(trackll$data, 
-                filter = c(min = input$minFilter, max = input$maxFilter))
-        }
-        output$filterConfirm <- renderText({
-            print("Filtering completed.")
+        withBusyIndicatorServer("filter",{
+            if (input$maxFilter == 0){
+                trackll$data <- filterTrack(trackll$data, 
+                    filter = c(min = input$minFilter, max = Inf))
+            } else {
+                trackll$data <- filterTrack(trackll$data, 
+                    filter = c(min = input$minFilter, max = input$maxFilter))
+            }
+            output$filterConfirm <- renderText({
+                print("Filtering completed.")
+            })
         })
     })
     
     #Trim
     observeEvent(input$trim, {
-        trackll$data <- trimTrack(trackll$data, 
-                trimmer = c(min = input$trimRange[[1]], max = input$trimRange[[2]]))
-        output$trimConfirm <- renderText({
-            print("Trimming completed.")
+        withBusyIndicatorServer("trim",{
+            trackll$data <- trimTrack(trackll$data, 
+                    trimmer = c(min = input$trimRange[[1]], max = input$trimRange[[2]]))
+            output$trimConfirm <- renderText({
+                print("Trimming completed.")
+            })
         })
     })
     
     #Mask
     observeEvent(input$mask, {
-        if (input$maskMethod == 1){
+        withBusyIndicatorServer("mask",{
             trackll$data <- maskTracks(folder$data, trackll$data)
-        } else {
-            trackll$data <- densityMaskTracks(trackll$data, automatic = T)#####NEED TO UPDATE
-        }
-        output$maskConfirm <- renderText({
-            print("Masking completed.")
+            output$maskConfirm <- renderText({
+                print("Masking completed.")
+            })
         })
     })
     
-    #Mask
+    #Merge
     observeEvent(input$merge, {
-        trackll$data <- mergeTracks(folder$data, trackll$data)
-        output$mergeConfirm <- renderText({
-            print("Merging completed.")
+        withBusyIndicatorServer("merge",{
+            trackll$data <- mergeTracks(folder$data, trackll$data)
+            output$mergeConfirm <- renderText({
+                print("Merging completed.")
+            })
         })
     })
     
@@ -140,66 +150,87 @@ shinyServer(function(input, output, session){
     
     #Export current state trackll
     observeEvent(input$export, {
-        exportTrackll(trackll$data, cores = input$cores);
-        output$exportConfirm <- renderText({
-            paste("Exported to: ", getwd(), sep = "")
+        withBusyIndicatorServer("export",{ 
+            exportTrackll(trackll$data, cores = input$cores);
+            output$exportConfirm <- renderText({
+                paste("Exported to: ", getwd(), sep = "")
+            })
         })
     })
     
     #MSD
     observeEvent(input$calculateMSD, {
-        if (input$plotMSD){
-            output$plotMSD <- renderPlot({
+        withBusyIndicatorServer("calculateMSD",{ 
+            if (input$plotMSD){
+                output$plotMSD <- renderPlot({
+                    msd.trackll$data <- isolate(msd(trackll$data, 
+                        dt = input$dtMSD, 
+                        resolution = input$resolutionMSD,
+                        summarize = input$summarizeMSD, 
+                        cores = input$cores,
+                        plot = TRUE,
+                        output = input$outputMSD))
+                }, width = 900, height = 400)
+                
+                updateTabsetPanel(session, "mainTabsetPanel",
+                    selected = "Analysis Plots")
+                
+            } else {
                 msd.trackll$data <- isolate(msd(trackll$data, 
                     dt = input$dtMSD, 
                     resolution = input$resolutionMSD,
                     summarize = input$summarizeMSD, 
                     cores = input$cores,
-                    plot = TRUE,
+                    plot = FALSE,
                     output = input$outputMSD))
-            }, width = 900, height = 400)
-            
-            updateTabsetPanel(session, "mainTabsetPanel",
-                selected = "Analysis Plots")
-            
-        } else {
-            msd.trackll$data <- isolate(msd(trackll$data, 
-                dt = input$dtMSD, 
-                resolution = input$resolutionMSD,
-                summarize = input$summarizeMSD, 
-                cores = input$cores,
-                plot = FALSE,
-                output = input$outputMSD))
-        }
-        if (input$outputMSD){
-            output$MSDConfirm <- renderText({
-                paste("MSD calculted. Files exported to: ", getwd(), sep = "")
-            })
-        } else {
-            output$MSDConfirm <- renderText({
-                print("MSD calculated.")
-            })
-        }
+            }
+            if (input$outputMSD){
+                output$MSDConfirm <- renderText({
+                    paste("MSD calculated. Files exported to: ", getwd(), sep = "")
+                })
+            } else {
+                output$MSDConfirm <- renderText({
+                    print("MSD calculated.")
+                })
+            }
+        })
     })
     
     #Dcoef
     observeEvent(input$calculateDcoef, {
-        if (input$methodDcoef == 1){
-            method <- "static"
-        } else if (input$methodDcoef == 2){
-            method <- "percentage"
-        } else if (input$methodDcoef == 3){
-            method <- "rolling.window"
-        }
-        
-        if (input$binwidthDcoef == 0){
-            binwidth <- NULL
-        } else {
-            binwidth <- input$binwidthDcoef
-        }
-        
-        if (input$plotDcoef){
-            output$plotDcoef <- renderPlot({
+        withBusyIndicatorServer("calculateDcoef",{ 
+            if (input$methodDcoef == 1){
+                method <- "static"
+            } else if (input$methodDcoef == 2){
+                method <- "percentage"
+            } else if (input$methodDcoef == 3){
+                method <- "rolling.window"
+            }
+            
+            if (input$binwidthDcoef == 0){
+                binwidth <- NULL
+            } else {
+                binwidth <- input$binwidthDcoef
+            }
+            
+            if (input$plotDcoef){
+                output$plotDcoef <- renderPlot({
+                    isolate(Dcoef(MSD = msd.trackll$data,
+                        trackll = trackll$data, 
+                        dt = input$dtDcoef, 
+                        rsquare = input$rsquareDcoef, 
+                        resolution = input$resolutionDcoef, 
+                        binwidth = binwidth, 
+                        method = method, 
+                        plot = TRUE, 
+                        output = input$outputDcoef, 
+                        t.interval = input$t.intervalDcoef))
+                }, width = 900, height = 400)
+                
+                updateTabsetPanel(session, "mainTabsetPanel",
+                    selected = "Analysis Plots")
+                
+            } else {
                 isolate(Dcoef(MSD = msd.trackll$data,
                     trackll = trackll$data, 
                     dt = input$dtDcoef, 
@@ -207,36 +238,21 @@ shinyServer(function(input, output, session){
                     resolution = input$resolutionDcoef, 
                     binwidth = binwidth, 
                     method = method, 
-                    plot = TRUE, 
+                    plot = FALSE, 
                     output = input$outputDcoef, 
                     t.interval = input$t.intervalDcoef))
-            }, width = 900, height = 400)
-            
-            updateTabsetPanel(session, "mainTabsetPanel",
-                selected = "Analysis Plots")
-            
-        } else {
-            isolate(Dcoef(MSD = msd.trackll$data,
-                trackll = trackll$data, 
-                dt = input$dtDcoef, 
-                rsquare = input$rsquareDcoef, 
-                resolution = input$resolutionDcoef, 
-                binwidth = binwidth, 
-                method = method, 
-                plot = FALSE, 
-                output = input$outputDcoef, 
-                t.interval = input$t.intervalDcoef))
-            
-        }
-        if (input$outputDcoef){
-            output$DcoefConfirm <- renderText({
-                paste("Dcoef calculted. Files exported to: ", getwd(), sep = "")
-            })
-        } else {
-            output$DcoefConfirm <- renderText({
-                print("Dcoef calculated.")
-            })
-        }
+                
+            }
+            if (input$outputDcoef){
+                output$DcoefConfirm <- renderText({
+                    paste("Dcoef calculated. Files exported to: ", getwd(), sep = "")
+                })
+            } else {
+                output$DcoefConfirm <- renderText({
+                    print("Dcoef calculated.")
+                })
+            }
+        })
     })
     
     #MSD present notification
@@ -250,39 +266,42 @@ shinyServer(function(input, output, session){
     
     #Displacement CDF
     observeEvent(input$calculateDCDF, {
-        if (input$plotDCDF){
-            output$plotDCDF <- renderPlot({
+        withBusyIndicatorServer("calculateDCDF",{ 
+            if (input$plotDCDF){
+                output$plotDCDF <- renderPlot({
+                    cdf$data <- isolate(displacementCDF(trackll = trackll$data,
+                        dt = input$dtDCDF,
+                        resolution = input$resolutionDCDF, 
+                        plot = TRUE,
+                        output = input$outputDCDF))
+                }, width = 900, height = 600)
+                
+                updateTabsetPanel(session, "mainTabsetPanel",
+                                  selected = "Analysis Plots")
+                
+            } else {
                 cdf$data <- isolate(displacementCDF(trackll = trackll$data,
                     dt = input$dtDCDF,
                     resolution = input$resolutionDCDF, 
-                    plot = TRUE,
+                    plot = FALSE,
                     output = input$outputDCDF))
-            }, width = 900, height = 600)
-            
-            updateTabsetPanel(session, "mainTabsetPanel",
-                              selected = "Analysis Plots")
-            
-        } else {
-            cdf$data <- isolate(displacementCDF(trackll = trackll$data,
-                dt = input$dtDCDF,
-                resolution = input$resolutionDCDF, 
-                plot = FALSE,
-                output = input$outputDCDF))
-            
-        }
-        if (input$outputDCDF){
-            output$DCDFConfirm <- renderText({
-                paste("Displacement CDF calculted. Files exported to: ", getwd(), sep = "")
-            })
-        } else {
-            output$DCDFConfirm <- renderText({
-                print("Displacement CDF calculated.")
-            })
-        }
+                
+            }
+            if (input$outputDCDF){
+                output$DCDFConfirm <- renderText({
+                    paste("Displacement CDF calculted. Files exported to: ", getwd(), sep = "")
+                })
+            } else {
+                output$DCDFConfirm <- renderText({
+                    print("Displacement CDF calculated.")
+                })
+            }
+        })
     })
     
     #Fit CDF 
     observeEvent(input$calculateFCDF, {
+        withBusyIndicatorServer("calculateFCDF",{ 
             if (isolate(input$componentsFCDF) == 1){
                 fitcdf$data <- isolate(fitCDF(cdf = cdf$data, 
                     components="one",
@@ -323,15 +342,50 @@ shinyServer(function(input, output, session){
                     output = input$outputFCDF,
                     seed=NULL))
             }
-        if (input$outputFCDF){
-            output$FCDFConfirm <- renderText({
-                paste("Fit CDF calculated. Files/plots exported to: ", getwd(), sep = "")
-            })
-        } else {
-            output$FCDFConfirm <- renderText({
-                paste("Fit CDF calculated. Plots exported to: ", getwd(), sep = "")
-            })
-        }
+            if (input$outputFCDF){
+                output$FCDFConfirm <- renderText({
+                    paste("Fit CDF calculated. Files/plots exported to: ", getwd(), sep = "")
+                })
+            } else {
+                output$FCDFConfirm <- renderText({
+                    paste("Fit CDF calculated. Plots exported to: ", getwd(), sep = "")
+                })
+            }
+        })
+    })
+    
+    #Dwell Time
+    observeEvent(input$calculateDT, {
+        withBusyIndicatorServer("calculateDT",{ 
+            if (input$plotDT){
+                output$plotDT <- renderPlot({
+                    dt$data <- isolate(dwellTime(trackll$data,
+                        t.interval = input$t.intervalDT, 
+                        x.scale = c(min = input$x.scale.minDT, max = input$x.scale.maxDT), 
+                        plot = TRUE, 
+                        output = input$outputDT))
+                }, width = 900, height = 600)
+                
+                updateTabsetPanel(session, "mainTabsetPanel",
+                    selected = "Analysis Plots")
+                
+            } else {
+                dt$data <- isolate(dwellTime(trackll$data,
+                    t.interval = input$t.intervalDT, 
+                    x.scale = c(min = input$x.scale.minDT, max = input$x.scale.maxDT), 
+                    plot = FALSE, 
+                    output = input$outputDT))
+            }
+            if (input$outputDT){
+                output$DTConfirm <- renderText({
+                    paste("DT calculated. Files exported to: ", getwd(), sep = "")
+                })
+            } else {
+                output$DTConfirm <- renderText({
+                    print("DT calculated.")
+                })
+            }
+        })
     })
 
 })
